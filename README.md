@@ -8,10 +8,10 @@ Lazarus is a high-density compression engine designed for extreme storage optimi
 - [The Core Philosophy](#the-core-philosophy)
 - [Real-World Use Cases](#real-world-use-cases)
 - [Performance Benchmarks](#performance-benchmarks)
+- [Installation](#installation)
+  - [Debian/Ubuntu (.deb)](#debianubuntu-deb)
+  - [From Source](#from-source)
 - [Usage](#usage)
-  - [Installation](#installation)
-  - [Compress](#compress)
-  - [Decompress](#decompress)
 - [Technical Architecture](#technical-architecture)
 - [License](#license)
 
@@ -29,11 +29,9 @@ Traditional compression often stops at standard entropy limits. Lazarus pushes f
 ## Real-World Use Cases
 
 Lazarus is engineered for scenarios where storage efficiency and data integrity are paramount:
-
-*   **Database Archiving**: Compress multi-terabyte database snapshots (SQL, NoSQL) for "cold storage" with up to 90% space savings.
-*   **Infrastructure Log Management**: Efficiently store years of server logs and security audit trails that typically contain high internal redundancy.
-*   **Remote Bandwidth Optimization**: Send critical data over low-bandwidth satellite or IoT connections by minimizing the transmission footprint.
-*   **Integrity-Critical Storage**: Securely archive sensitive files where the cost of a single bit-flip is unacceptable, thanks to our block-level verification.
+*   **Database Archiving**: Compress multi-terabyte database snapshots for "cold storage" with up to 90% space savings.
+*   **Infrastructure Log Management**: Efficiently store years of server logs and audit trails.
+*   **Remote Bandwidth Optimization**: Send critical data over low-bandwidth connections.
 
 ## Performance Benchmarks
 
@@ -45,32 +43,40 @@ Lazarus is engineered for scenarios where storage efficiency and data integrity 
 
 *\*Media files are already compressed at the hardware level. Lazarus focuses on perfect integrity for these types rather than lossy reduction.*
 
-## Usage
+## Installation
 
-### Installation
+### Debian/Ubuntu (.deb)
+1. Download the latest `.deb` package from the [Releases](https://github.com/1999AZZAR/lazarus/releases) page.
+2. Install it using `dpkg`:
+```bash
+sudo dpkg -i lazarus_0.1.0_amd64.deb
+```
+
+### From Source
 Ensure you have the Rust toolchain installed.
 ```bash
 cargo build --release
+sudo cp target/release/lazarus /usr/bin/
 ```
 
+## Usage
+
+Once installed, `lazarus` is available as a global command.
+
 ### Compress
-Compress any file into the Lazarus `.lzr` format.
 ```bash
-./target/release/lazarus compress <input_file> --output <output_file>.lzr
+lazarus compress <input_file> --output <output_file>.lzr
 ```
 
 ### Decompress
-Reconstruct the original file with absolute integrity.
 ```bash
-./target/release/lazarus decompress <input_file>.lzr --output <restored_file>
+lazarus decompress <input_file>.lzr --output <restored_file>
 ```
 
 ## Technical Architecture
 - **Engine**: LZMA2 (Lempel-Ziv-Markov chain algorithm).
-- **Integrity**: Block-level CRC-32 (Fast and collision-resistant for local reconstruction).
-- **Implementation**: Written in 100% safe Rust for memory security and performance.
+- **Integrity**: Block-level CRC-32 fingerprints.
+- **Implementation**: Written in 100% safe Rust.
 
 ## License
-
 [MIT License](LICENSE) - Copyright (c) 2026 Azzar Budiyanto
-
