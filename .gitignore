@@ -1,0 +1,19 @@
+# Rust artifacts
+/target
+Cargo.lock
+
+# Lazarus specific artifacts
+*.lzr
+*reconstructed.db
+*reconstructed.mp4
+*final.mp4
+*crazy.mp4.lzr
+*stable.mp4.lzr
+*ultra.mp4.lzr
+
+# IDE / System
+.vscode/
+.idea/
+.DS_Store
+*.swpLilyOpenCms.db
+memory.db
