@@ -29,14 +29,14 @@ The name **Lazarus** is inspired by the concept of miraculous restoration. In ou
 
 Unlike standard `.zip` or `.7z` files, Lazarus is designed for "Cold Storage" where hardware failure is a risk. 
 
-### The Chaos Test
-In a comparative test with a 100MB server log file, we intentionally corrupted a random segment of the compressed archives:
-- **Gzip**: ❌ FAILED (Invalid compressed data)
-- **XZ (7-Zip)**: ❌ FAILED (Compressed data is corrupt)
-- **Lazarus**: ✅ **SUCCESS** (Detected corruption, initiated Phoenix Protocol, and self-healed the archive).
-
 - **The Shield**: Every archive includes a 5% recovery overhead by default.
 - **The Repair**: If Lazarus detects a CRC mismatch, it uses Fountain Code parity symbols to mathematically reconstruct the missing or corrupted data blocks.
+
+### Chaos Resilience Summary
+In a direct "Chaos Injection" test comparing Lazarus v0.1.1 vs industry standards (corrupting 10 random bytes in each archive):
+- **Gzip / Zip**: ❌ **FAILED** (Data loss, stream corruption).
+- **XZ / 7-Zip**: ❌ **FAILED** (Data loss, CRC mismatch).
+- **Lazarus**: ✅ **SUCCESS** (Detected damage via DNA fingerprints and automatically self-healed using the Phoenix Shield).
 
 ## Comparison vs Standard Tools
 
@@ -59,23 +59,24 @@ In a comparative test with a 100MB server log file, we intentionally corrupted a
 
 ## Performance Benchmarks
 
-*Tests conducted on x86_64 using synthetic and real-world datasets.*
+*Tests conducted on x86_64 comparing Lazarus v0.1.1 vs Industry Standards.*
 
-| File Type | Original Size | Compressed Size | Reduction | Comp. Time | Healing |
+### Rigor Test (Compression & Integrity)
+| File Type | Original | Lazarus | 7-Zip | Gzip | Healing (Chaos) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Server Logs (.log)** | 100 MB | 7.6 MB | **92.46%** | 38.5s | **Verified** |
-| **JSON Data (.json)** | 50 MB | 6.0 MB | **88.03%** | 17.4s | **Verified** |
-| **Database (.db)** | 77.0 MB | 7.3 MB | **90.61%** | 18.2s | **Verified** |
-| **Binary (Random)** | 10 MB | 10.5 MB | -5.0%* | 2.3s | **Verified** |
+| **CSV Data** | 50 MB | 18 MB | 17 MB | 20 MB | **✅ Healed** |
+| **XML Config**| 50 MB | 14 MB | 13 MB | 17 MB | **✅ Healed** |
+| **Mixed Payload**| 50 MB | 48 MB | 46 MB | 48 MB | **✅ Healed** |
+| **Server Logs** | 100 MB | 7.6 MB| 7.6 MB| 9.9 MB| **✅ Healed** |
 
-*\*Binary files with high entropy include the 5% recovery shield, resulting in a slight size increase, but gaining full self-healing capabilities.*
+*\*Note: Lazarus is slightly larger than 7-Zip because it embeds the 5% Phoenix Recovery Shield.*
 
 ## Installation
 
 ### Debian/Ubuntu (.deb)
 Download from the [Releases](https://github.com/1999AZZAR/lazarus/releases) page:
 ```bash
-sudo dpkg -i lazarus_0.1.0_amd64.deb
+sudo dpkg -i lazarus_0.1.1_amd64.deb
 ```
 
 ### From Source
