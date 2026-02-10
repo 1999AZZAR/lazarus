@@ -17,3 +17,4 @@ Cargo.lock
 .DS_Store
 *.swpLilyOpenCms.db
 memory.db
+benchmarks/data/

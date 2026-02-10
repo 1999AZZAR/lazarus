@@ -23,9 +23,10 @@ The name **Lazarus** is inspired by the concept of miraculous restoration. In ou
 
 Traditional compression often stops at standard entropy limits. Lazarus pushes further by:
 1.  **Adaptive Chunking**: Automatically scales block sizes (4KB to 1MB) based on input file size to balance metadata overhead and reconstruction granularity.
-2.  **DNA Fingerprinting**: Before compression, every block is fingerprinted with CRC-32. These fingerprints serve as the "DNA" ground truth for reconstruction.
-3.  **Ultra-Deep Entropy Reduction**: Utilizing LZMA (Level 9 Extreme) to strip all mathematical redundancy from the data.
-4.  **Perfect Reconstruction**: During decompression, the engine rebuilds the data and validates every single block against its original DNA.
+2.  **Phoenix Protocol (Self-Healing)**: Embeds a 5% Wirehair parity shield into the archive. If disk rot or corruption occurs, Lazarus can mathematically reconstruct the broken parts of the file using Fountain Codes.
+3.  **DNA Fingerprinting**: Before compression, every block is fingerprinted with CRC-32. These fingerprints serve as the "DNA" ground truth for reconstruction.
+4.  **Ultra-Deep Entropy Reduction**: Utilizing LZMA (Level 9 Extreme) to strip all mathematical redundancy from the data.
+5.  **Perfect Reconstruction**: During decompression, the engine rebuilds the data and validates every single block against its original DNA.
 
 ## Real-World Use Cases
 
