@@ -71,4 +71,6 @@ Reconstruct the original file with absolute integrity.
 - **Implementation**: Written in 100% safe Rust for memory security and performance.
 
 ## License
-MIT License - Copyright (c) 2026 Azzar Budiyanto
+
+[MIT License](LICENSE) - Copyright (c) 2026 Azzar Budiyanto
+
