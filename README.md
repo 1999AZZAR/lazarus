@@ -22,9 +22,10 @@ The name **Lazarus** is inspired by the concept of miraculous restoration. In ou
 ## The Core Philosophy
 
 Traditional compression often stops at standard entropy limits. Lazarus pushes further by:
-1.  **DNA Fingerprinting**: Before compression, every 1MB block is fingerprinted with CRC-32. These fingerprints serve as the "DNA" ground truth for reconstruction.
-2.  **Ultra-Deep Entropy Reduction**: Utilizing LZMA (Level 9 Extreme) to strip all mathematical redundancy from the data.
-3.  **Perfect Reconstruction**: During decompression, the engine rebuilds the data and validates every single block against its original DNA.
+1.  **Adaptive Chunking**: Automatically scales block sizes (4KB to 1MB) based on input file size to balance metadata overhead and reconstruction granularity.
+2.  **DNA Fingerprinting**: Before compression, every block is fingerprinted with CRC-32. These fingerprints serve as the "DNA" ground truth for reconstruction.
+3.  **Ultra-Deep Entropy Reduction**: Utilizing LZMA (Level 9 Extreme) to strip all mathematical redundancy from the data.
+4.  **Perfect Reconstruction**: During decompression, the engine rebuilds the data and validates every single block against its original DNA.
 
 ## Real-World Use Cases
 
@@ -67,6 +68,7 @@ Once installed, `lazarus` is available as a global command.
 ```bash
 lazarus compress <input_file> --output <output_file>.lzr
 ```
+*Note: Lazarus automatically selects the optimal block size, but you can override it using `--block-size <bytes>`.*
 
 ### Decompress
 ```bash
@@ -76,6 +78,7 @@ lazarus decompress <input_file>.lzr --output <restored_file>
 ## Technical Architecture
 - **Engine**: LZMA2 (Lempel-Ziv-Markov chain algorithm).
 - **Integrity**: Block-level CRC-32 fingerprints.
+- **Efficiency**: Adaptive Block Sizing (4KB - 1MB range).
 - **Implementation**: Written in 100% safe Rust.
 
 ## License
