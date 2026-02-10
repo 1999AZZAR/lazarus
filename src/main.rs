@@ -56,7 +56,20 @@ fn main() -> Result<()> {
     match cli.command {
         Commands::Compress { input, output, density, block_size } => {
             let input_path = Path::new(&input);
-            let output_path = output.unwrap_or_else(|| format!("{}.lzr", input));
+            
+            // Sanitize default output name
+            let output_path = output.unwrap_or_else(|| {
+                let base_name = input_path.file_name()
+                    .and_then(|s| Some(s.to_string_lossy().into_owned()))
+                    .filter(|s| s != "." && s != "..")
+                    .unwrap_or_else(|| {
+                        // Fallback to current directory name if input is "." or similar
+                        std::env::current_dir().ok()
+                            .and_then(|p| p.file_name().map(|s| s.to_string_lossy().into_owned()))
+                            .unwrap_or_else(|| "archive".to_string())
+                    });
+                format!("{}.lzr", base_name)
+            });
 
             let (data, is_folder) = if input_path.is_dir() {
                 println!("Bundling folder {}...", input);
