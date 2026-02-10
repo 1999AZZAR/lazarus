@@ -36,13 +36,17 @@ Lazarus is engineered for scenarios where storage efficiency and data integrity 
 
 ## Performance Benchmarks
 
-| File Type | Original Size | Compressed Size | Reduction |
-| :--- | :--- | :--- | :--- |
-| **Database (.db)** | 77.0 MB | 7.3 MB | **90.61%** |
-| **Log Files (.log)** | 150.0 MB | 4.2 MB | **97.20%** |
-| **Video (.mp4)** | 1.1 GB | 1.1 GB | ~0.10%* |
+Tests were conducted on a Linux x86_64 environment using synthetic datasets.
 
-*\*Media files are already compressed at the hardware level. Lazarus focuses on perfect integrity for these types rather than lossy reduction.*
+| File Type | Original Size | Compressed Size | Reduction | Compression Time | Decompression Time |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Server Logs (.log)** | 100 MB | 7.6 MB | **92.46%** | 38.59s | 0.50s |
+| **JSON Data (.json)** | 50 MB | 6.0 MB | **88.03%** | 17.45s | 0.33s |
+| **Database (.db)** | 77.0 MB | 7.3 MB | **90.61%** | 18.20s | 0.60s |
+| **Binary/Media** | 1.1 GB | 1.1 GB | ~0.10%* | N/A | N/A |
+
+*\*Note: Already-compressed media files (MP4, JPG) see minimal reduction but benefit from Lazarus's block-level integrity verification.*
+
 
 ## Installation
 
