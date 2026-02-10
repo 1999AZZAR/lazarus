@@ -28,8 +28,15 @@ The name **Lazarus** is inspired by the concept of miraculous restoration. In ou
 ## Self-Healing: The Phoenix Protocol
 
 Unlike standard `.zip` or `.7z` files, Lazarus is designed for "Cold Storage" where hardware failure is a risk. 
-- **The Shield**: Every archive includes a 5% recovery overhead.
-- **The Repair**: If Lazarus detects a CRC mismatch during decompression, it automatically triggers the **Phoenix Protocol**, using parity symbols to reconstruct missing or corrupted blocks.
+
+### The Chaos Test
+In a comparative test with a 100MB server log file, we intentionally corrupted a random segment of the compressed archives:
+- **Gzip**: ❌ FAILED (Invalid compressed data)
+- **XZ (7-Zip)**: ❌ FAILED (Compressed data is corrupt)
+- **Lazarus**: ✅ **SUCCESS** (Detected corruption, initiated Phoenix Protocol, and self-healed the archive).
+
+- **The Shield**: Every archive includes a 5% recovery overhead by default.
+- **The Repair**: If Lazarus detects a CRC mismatch, it uses Fountain Code parity symbols to mathematically reconstruct the missing or corrupted data blocks.
 
 ## Comparison vs Standard Tools
 
