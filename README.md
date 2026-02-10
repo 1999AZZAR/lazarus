@@ -88,16 +88,19 @@ sudo cp target/release/lazarus /usr/bin/
 
 ## Usage
 
-### Compress (File or Folder)
+Lazarus automatically detects whether you are providing a single file or an entire folder.
+
+### Compress
 ```bash
-lazarus compress <input_path> --output <output_file>.lzr
+lazarus compress <path>
 ```
-*Note: If a folder is provided, Lazarus automatically bundles it into a secure, self-healing archive.*
+*Note: This works for both files and folders. Lazarus will create a secure, self-healing `.lzr` archive.*
 
 ### Decompress
 ```bash
-lazarus decompress <input_file>.lzr --output <destination_path>
+lazarus decompress <file.lzr>
 ```
+*Note: If the archive contains a folder, it will be automatically extracted as a directory.*
 
 ## License
 [MIT License](LICENSE) - Copyright (c) 2026 Azzar Budiyanto
