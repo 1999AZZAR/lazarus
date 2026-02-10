@@ -68,9 +68,11 @@ In a direct "Chaos Injection" test comparing Lazarus v0.1.1 vs industry standard
 | **CSV Data** | 50 MB | 18 MB | 17 MB | 20 MB | **✅ Healed** |
 | **XML Config**| 50 MB | 14 MB | 13 MB | 17 MB | **✅ Healed** |
 | **Mixed Payload**| 50 MB | 48 MB | 46 MB | 48 MB | **✅ Healed** |
-| **Server Logs** | 100 MB | 7.6 MB| 7.6 MB| 9.9 MB| **✅ Healed** |
+| **Server Logs** | 100 MB | 8.0 MB| 7.6 MB| 9.9 MB| **✅ Healed** |
+| **Folder (Tiny)**| 1.5 MB | 1.6 KB| 1.0 KB| 2.2 KB| *Skipped (Too Small)* |
 
-*\*Note: Lazarus is slightly larger than 7-Zip because it embeds the 5% Phoenix Recovery Shield.*
+*\*Note: Healing is automatically disabled for archives < 2KB to prevent excessive metadata overhead.*
+
 
 ## Installation
 
