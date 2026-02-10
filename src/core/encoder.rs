@@ -27,7 +27,7 @@ impl Encoder {
         }
     }
 
-    pub fn compress(&self, input: &[u8]) -> Result<(Vec<u8>, Vec<u8>, LazarusHeader)> {
+    pub fn compress(&self, input: &[u8], is_folder: bool) -> Result<(Vec<u8>, Vec<u8>, LazarusHeader)> {
         let block_size = self.block_size.unwrap_or_else(|| {
             let optimal = Self::calculate_optimal_block_size(input.len());
             println!("  Adaptive Chunking: Selected {} bytes for {} input bytes.", optimal, input.len());
@@ -90,6 +90,7 @@ impl Encoder {
             has_recovery: !recovery_data.is_empty(),
             recovery_len: recovery_data.len() as u64,
             compressed_fingerprints,
+            is_folder,
         };
 
         Ok((compressed_data, recovery_data, header))

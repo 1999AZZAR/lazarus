@@ -52,6 +52,7 @@ In a direct "Chaos Injection" test comparing Lazarus v0.1.1 vs industry standard
 - **Invincibility**: Can survive partial file corruption that would destroy other archives.
 - **Precision**: Identifies exactly which part of a file is damaged.
 - **Adaptive**: Optimizes itself for the data size automatically.
+- **Native Folder Support**: Handles entire directories seamlessly without external tools.
 
 ### Cons
 - **CPU Intensive**: High-level compression takes time and power.
@@ -87,14 +88,15 @@ sudo cp target/release/lazarus /usr/bin/
 
 ## Usage
 
-### Compress
+### Compress (File or Folder)
 ```bash
-lazarus compress <file>
+lazarus compress <input_path> --output <output_file>.lzr
 ```
+*Note: If a folder is provided, Lazarus automatically bundles it into a secure, self-healing archive.*
 
 ### Decompress
 ```bash
-lazarus decompress <file.lzr>
+lazarus decompress <input_file>.lzr --output <destination_path>
 ```
 
 ## License

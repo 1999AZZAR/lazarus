@@ -11,4 +11,5 @@ pub struct LazarusHeader {
     pub has_recovery: bool,
     pub recovery_len: u64,
     pub compressed_fingerprints: Vec<u32>, // DNA of Compressed Data (for Repair)
+    pub is_folder: bool,               // New field for folder support
 }
