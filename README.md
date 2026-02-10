@@ -2,6 +2,19 @@
 
 Lazarus is a high-density compression engine designed for extreme storage optimization and perfect data reconstruction. It uses a multi-layered approach combining deep entropy reduction with block-level integrity fingerprints to ensure that even the most aggressive compression remains 100% reliable.
 
+## Table of Contents
+
+- [Why Lazarus?](#why-lazarus)
+- [The Core Philosophy](#the-core-philosophy)
+- [Real-World Use Cases](#real-world-use-cases)
+- [Performance Benchmarks](#performance-benchmarks)
+- [Usage](#usage)
+  - [Installation](#installation)
+  - [Compress](#compress)
+  - [Decompress](#decompress)
+- [Technical Architecture](#technical-architecture)
+- [License](#license)
+
 ## Why "Lazarus"?
 
 The name **Lazarus** is inspired by the concept of miraculous restoration. In our engine, data is intentionally "stripped down" to its absolute minimum—discarding over 90% of its physical footprint in many cases. However, because we preserve the **"DNA"** (CRC-32 fingerprints) of every block, the original data can be "resurrected" from its compressed state with absolute bit-for-bit perfection. It represents the bridge between extreme data loss (via compression) and total recovery.
