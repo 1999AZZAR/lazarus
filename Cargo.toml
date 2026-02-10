@@ -16,3 +16,18 @@ xz2 = "0.1.7"
 
 [dev-dependencies]
 tempfile = "3.8"
+
+[package.metadata.deb]
+maintainer = "Azzar Budiyanto"
+copyright = "2026, Azzar Budiyanto"
+license-file = ["LICENSE", "4"]
+extended-description = """\
+Lazarus is a high-density compression engine designed for extreme storage optimization. \
+It combines deep entropy reduction (LZMA) with block-level integrity fingerprints (CRC-32) \
+to ensure perfect data reconstruction."""
+section = "utils"
+priority = "optional"
+assets = [
+    ["target/release/lazarus", "usr/bin/", "755"],
+    ["README.md", "usr/share/doc/lazarus/README.md", "644"],
+]
