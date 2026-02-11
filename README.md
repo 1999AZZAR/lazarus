@@ -1,6 +1,6 @@
 # Lazarus: High-Density DNA Compression
 
-Lazarus is a high-density compression engine designed for extreme storage optimization and self-healing data reconstruction. It combines deep entropy reduction with block-level integrity fingerprints, redundant header backups, and adaptive Fountain Code parity to ensure that your data remains 100% reliable, even in the face of bit rot or physical corruption.
+Lazarus is a high-density compression engine designed for extreme storage optimization, self-healing data reconstruction, and built-in confidentiality. It combines deep entropy reduction with block-level integrity fingerprints, redundant header backups, ChaCha20-Poly1305 encryption, and adaptive Fountain Code parity to ensure that your data remains 100% reliable and private, even in the face of bit rot or unauthorized access.
 
 ## Table of Contents
 
@@ -47,12 +47,14 @@ In a direct "Chaos Injection" test comparing Lazarus vs industry standards (corr
 | **Compression Ratio** | Ultra High (LZMA L9) | Ultra High | Moderate |
 | **Self-Healing** | **Yes (Phoenix Protocol)** | No | No |
 | **Integrity Check** | Block-Level (Adaptive) | Stream-Level | File-Level |
+| **Encryption** | **ChaCha20-Poly1305** | AES-256 | Mixed |
 | **Parallel Processing** | **Yes (via Rayon)** | Semi-Supported | Limited |
 | **Repair Capability** | Mathematical (Wirehair) | External Rev-files only | None |
 | **Speed** | Moderate (Parallel) | Slow (L9) | Very Fast |
 
 ### Pros
 - **High Resilience**: Can survive partial file corruption (bit rot) and header damage that destroys standard archives.
+- **Data Privacy**: Built-in block-level encryption ensures confidentiality without sacrificing resilience.
 - **Parallel Architecture**: Leverages multi-core CPUs for both compression and decompression.
 - **Adaptive Precision**: Identifies granular data loss at the block level.
 - **Native Directory Support**: Bundles folders without requiring external `tar` wrapping.
@@ -97,12 +99,12 @@ Lazarus automatically detects whether you are providing a single file or an enti
 
 ### Compress
 ```bash
-lazarus compress <path>
+lazarus compress <path> [--password <secret>]
 ```
 
 ### Decompress
 ```bash
-lazarus decompress <file.lzr>
+lazarus decompress <file.lzr> [--password <secret>]
 ```
 
 ## License

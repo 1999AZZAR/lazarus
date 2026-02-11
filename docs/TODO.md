@@ -8,11 +8,11 @@
 - **Granular Integrity**: Block-level CRC-32 fingerprints for precise corruption detection.
 - **Adaptive Scaling**: Dynamic block sizing and adaptive parity (3-10%) for optimized overhead.
 - **Structural Redundancy**: Dual-header "Brain Backup" strategy prevents fatal archive failures from header damage.
+- **Built-in Confidentiality**: Integrated ChaCha20-Poly1305 encryption (Secret Shield) for block-level data privacy.
 
 ### Cons
 - **Context Loss**: Independent chunk compression reduces absolute density compared to single-stream LZMA.
-- **Computational Weight**: Multi-layered integrity checks and self-healing increase CPU and memory requirements.
-- **Security Gap**: Archived data remains in cleartext (post-compression), lacking built-in confidentiality.
+- **Computational Weight**: Multi-layered integrity checks, encryption, and self-healing increase CPU and memory requirements.
 
 ## 2. Completed Milestones
 - [x] **Parallel Processing**: Successfully implemented `rayon` for concurrent chunk handling.
@@ -20,19 +20,16 @@
 - [x] **Performance Tracking**: Documented impact analysis and benchmarking results.
 - [x] **Header Redundancy**: Implemented "Brain Backup" (Redundant Headers) and DNA verification to prevent segfaults.
 - [x] **Adaptive Parity**: Implemented dynamic recovery overhead (3% - 10%) optimized for varying file sizes.
+- [x] **Secret Shield**: Integrated ChaCha20-Poly1305 block-level encryption with Argon2 key derivation.
 
 ## 3. Active Technical Debt
-
-### Problem: Security Vulnerability (Cleartext Data)
-- **Solution**: Integrate a "Secret Shield" using ChaCha20-Poly1305 encryption. Encrypt blocks before applying Fountain Code parity to ensure both confidentiality and resilience.
 
 ### Problem: Missing System Metadata
 - **Solution**: Expand the `.lzr` header structure to capture and restore Unix file permissions (mode) and system timestamps (mtime).
 
 ## 4. Future Roadmap
 
-### Phase 1: Security, Portability & Robustness
-- [ ] Implement ChaCha20-Poly1305 encryption layer.
+### Phase 1: Portability & Robustness
 - [ ] Add Unix metadata persistence (permissions, timestamps).
 - [ ] **WASM Porting**: Compile core engine for browser-side data resurrection.
 
@@ -45,4 +42,4 @@
 - [ ] **CI/CD Pipeline**: Automate multi-platform binary and package builds (.deb, .rpm) via GitHub Actions.
 
 ---
-*Roadmap updated by Mema following v0.1.6 release*
+*Roadmap updated by Mema following v0.1.7 release*
