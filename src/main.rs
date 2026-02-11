@@ -134,12 +134,16 @@ fn main() -> Result<()> {
 
             let header = match header {
                 Ok(h) => {
-                    // Skip the backup copy since primary is fine
+                    // Correct: If primary is fine, we MUST seek past the backup copy
+                    // The file cursor is currently at the end of Primary Header.
+                    // We need to move it forward by another header_len.
                     file.seek(std::io::SeekFrom::Current(header_len as i64))?;
                     h
                 },
                 Err(e) => {
                     println!("  Warning: Primary Brain corrupted ({}). Attempting Resurrection from Backup...", e);
+                    // The file cursor is currently at the end of Primary Header.
+                    // The Backup Header starts exactly where we are.
                     let mut backup_buf = vec![0u8; header_len];
                     file.read_exact(&mut backup_buf).context("Failed to read backup header")?;
                     let h: LazarusHeader = bincode::deserialize(&backup_buf)
