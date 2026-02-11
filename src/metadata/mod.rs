@@ -14,4 +14,6 @@ pub struct LazarusHeader {
     pub is_folder: bool,               // New field for folder support
     pub compressed_chunk_sizes: Vec<usize>, // Sizes of each compressed chunk for parallel decompression
     pub header_checksum: u32,          // Checksum of the header itself (excluding this field)
+    pub is_encrypted: bool,            // Whether the archive is encrypted
+    pub encryption_salt: Option<[u8; 16]>, // Salt for key derivation
 }

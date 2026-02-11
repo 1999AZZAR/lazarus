@@ -6,11 +6,13 @@ use xz2::read::XzDecoder;
 use wirehair_wrapper::wirehair::{WirehairDecoder, WirehairResult};
 use rayon::prelude::*;
 
-pub struct Decoder;
+pub struct Decoder {
+    password: Option<String>,
+}
 
 impl Decoder {
-    pub fn new() -> Self {
-        Self
+    pub fn new(password: Option<String>) -> Self {
+        Self { password }
     }
 
     pub fn decompress(&self, compressed_data: &[u8], recovery_data: &[u8], header: &LazarusHeader) -> Result<Vec<u8>> {
@@ -23,8 +25,11 @@ impl Decoder {
         let body_to_decompress = if is_healthy {
             // Use parallel decompression if chunk sizes are available
             let decompress_result = if !header.compressed_chunk_sizes.is_empty() {
-                self.lzma_decompress_parallel(compressed_data, &header.compressed_chunk_sizes, header.original_size)
+                self.lzma_decompress_parallel(compressed_data, &header.compressed_chunk_sizes, header)
             } else {
+                if header.is_encrypted {
+                    bail!("Encrypted archive requires chunk boundaries for parallel decryption. File is incompatible or corrupted.");
+                }
                 // Fallback to single-stream decompression for backward compatibility
                 self.lzma_decompress(compressed_data, header.original_size)
             };
@@ -77,7 +82,7 @@ impl Decoder {
         Ok(buffer)
     }
 
-    fn lzma_decompress_parallel(&self, data: &[u8], chunk_sizes: &[usize], original_size: u64) -> Result<Vec<u8>> {
+    fn lzma_decompress_parallel(&self, data: &[u8], chunk_sizes: &[usize], header: &LazarusHeader) -> Result<Vec<u8>> {
         // Split compressed data into chunks based on stored sizes
         let mut chunks = Vec::new();
         let mut offset = 0;
@@ -89,10 +94,28 @@ impl Decoder {
             offset += size;
         }
 
-        // Decompress each chunk in parallel
+        // Prepare encryption key if needed
+        let key = if header.is_encrypted {
+            let pwd = self.password.as_ref()
+                .context("This archive is encrypted. Please provide a password.")?;
+            let salt = header.encryption_salt
+                .context("Missing encryption salt in header.")?;
+            Some(crate::core::derive_key(pwd, &salt))
+        } else {
+            None
+        };
+
+        // Decompress each chunk in parallel (and decrypt if needed)
         let decompressed_chunks: Result<Vec<Vec<u8>>> = chunks.par_iter()
-            .map(|chunk| {
-                let mut decompressor = XzDecoder::new(*chunk);
+            .enumerate()
+            .map(|(i, chunk)| {
+                let processed_chunk = if let Some(ref k) = key {
+                    crate::core::decrypt_data(chunk, k, i as u32)?
+                } else {
+                    chunk.to_vec()
+                };
+
+                let mut decompressor = XzDecoder::new(&processed_chunk[..]);
                 let mut buffer = Vec::new();
                 decompressor.read_to_end(&mut buffer)
                     .map_err(|e| anyhow::anyhow!("LZMA decompression failed: {}", e))?;
@@ -103,8 +126,8 @@ impl Decoder {
         let decompressed_chunks = decompressed_chunks?;
         let result: Vec<u8> = decompressed_chunks.into_iter().flatten().collect();
         
-        if result.len() != original_size as usize {
-            bail!("Decompressed size mismatch: expected {}, got {}", original_size, result.len());
+        if result.len() != header.original_size as usize {
+            bail!("Decompressed size mismatch: expected {}, got {}", header.original_size, result.len());
         }
         
         Ok(result)
@@ -165,8 +188,11 @@ impl Decoder {
         
         // Use parallel decompression if chunk sizes are available
         if !header.compressed_chunk_sizes.is_empty() {
-            self.lzma_decompress_parallel(&repaired_body, &header.compressed_chunk_sizes, header.original_size)
+            self.lzma_decompress_parallel(&repaired_body, &header.compressed_chunk_sizes, header)
         } else {
+            if header.is_encrypted {
+                bail!("Encrypted archive requires chunk boundaries for parallel decryption.");
+            }
             self.lzma_decompress(&repaired_body, header.original_size)
         }
     }

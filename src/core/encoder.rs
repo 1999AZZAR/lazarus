@@ -9,11 +9,12 @@ use rayon::prelude::*;
 pub struct Encoder {
     density: f32,
     block_size: Option<u32>,
+    password: Option<String>,
 }
 
 impl Encoder {
-    pub fn new(density: f32, block_size: Option<u32>) -> Self {
-        Self { density, block_size }
+    pub fn new(density: f32, block_size: Option<u32>, password: Option<String>) -> Self {
+        Self { density, block_size, password }
     }
 
     fn calculate_optimal_block_size(file_size: usize) -> u32 {
@@ -53,10 +54,28 @@ impl Encoder {
             .collect();
         
         let compressed_chunks = compressed_chunks?;
-        let compressed_chunk_sizes: Vec<usize> = compressed_chunks.iter().map(|c| c.len()).collect();
-        let compressed_data: Vec<u8> = compressed_chunks.into_iter().flatten().collect();
+        
+        // 3. Optional Encryption (Secret Shield) - Parallel
+        let (processed_chunks, encryption_salt) = if let Some(ref pwd) = self.password {
+            println!("  Applying Secret Shield (ChaCha20-Poly1305)...");
+            let salt = crate::core::generate_salt();
+            let key = crate::core::derive_key(pwd, &salt);
+            
+            let encrypted_chunks: Result<Vec<Vec<u8>>> = compressed_chunks.into_par_iter()
+                .enumerate()
+                .map(|(i, chunk)| {
+                    crate::core::encrypt_data(&chunk, &key, i as u32)
+                })
+                .collect();
+            (encrypted_chunks?, Some(salt))
+        } else {
+            (compressed_chunks, None)
+        };
 
-        // 3. Generate Wirehair Recovery Symbols
+        let compressed_chunk_sizes: Vec<usize> = processed_chunks.iter().map(|c| c.len()).collect();
+        let compressed_data: Vec<u8> = processed_chunks.into_iter().flatten().collect();
+
+        // 4. Generate Wirehair Recovery Symbols
         let wh_block_size = 1024;
         let mut compressed_fingerprints = Vec::new();
         let mut recovery_data = Vec::new();
@@ -110,6 +129,8 @@ impl Encoder {
             is_folder,
             compressed_chunk_sizes,
             header_checksum: 0,
+            is_encrypted: encryption_salt.is_some(),
+            encryption_salt,
         };
 
         // 4. Final Header DNA (Structural Integrity)

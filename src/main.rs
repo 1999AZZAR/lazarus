@@ -36,6 +36,9 @@ enum Commands {
         /// Block size in bytes.
         #[arg(short, long)]
         block_size: Option<u32>,
+        /// Optional password for encryption (Secret Shield).
+        #[arg(short, long)]
+        password: Option<String>,
     },
     /// Decompress a file
     Decompress {
@@ -44,6 +47,9 @@ enum Commands {
         /// Output path (file or folder)
         #[arg(short, long)]
         output: Option<String>,
+        /// Password for encrypted archives.
+        #[arg(short, long)]
+        password: Option<String>,
     },
 }
 
@@ -54,7 +60,7 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Compress { input, output, density, block_size } => {
+        Commands::Compress { input, output, density, block_size, password } => {
             let input_path = Path::new(&input);
             
             // Sanitize default output name
@@ -83,7 +89,7 @@ fn main() -> Result<()> {
             };
 
             let original_size = data.len();
-            let encoder = Encoder::new(density, block_size); 
+            let encoder = Encoder::new(density, block_size, password); 
             let (compressed_data, recovery_data, header) = encoder.compress(&data, is_folder)?;
 
             // Serialize Header with calculated DNA
@@ -107,7 +113,7 @@ fn main() -> Result<()> {
             println!("Lazarus:  {} bytes (Inc. Brain Redundancy & Recovery Shield)", final_size);
             println!("Reduction: {:.2}%", ratio * 100.0);
         },
-        Commands::Decompress { input, output } => {
+        Commands::Decompress { input, output, password } => {
             println!("Reading {}...", input);
             let mut file = File::open(&input)?;
             let total_len = file.metadata()?.len();
@@ -176,7 +182,7 @@ fn main() -> Result<()> {
             }
 
             println!("Reconstructing...");
-            let decoder = Decoder::new();
+            let decoder = Decoder::new(password);
             let reconstructed = decoder.decompress(&compressed_buf, &recovery_buf, &header)?;
 
             let output_path = output.unwrap_or_else(|| {
