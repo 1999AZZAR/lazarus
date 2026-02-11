@@ -1,4 +1,4 @@
-# Lazarus: High-Density "DNA" Compression
+# Lazarus: High-Density DNA Compression
 
 Lazarus is a high-density compression engine designed for extreme storage optimization and self-healing data reconstruction. It combines deep entropy reduction with block-level integrity fingerprints and Fountain Code parity to ensure that your data remains 100% reliable, even in the face of bit rot or physical corruption.
 
@@ -34,9 +34,9 @@ Unlike standard `.zip` or `.7z` files, Lazarus is designed for "Cold Storage" wh
 
 ### Chaos Resilience Summary
 In a direct "Chaos Injection" test comparing Lazarus v0.1.1 vs industry standards (corrupting 10 random bytes in each archive):
-- **Gzip / Zip**: ❌ **FAILED** (Data loss, stream corruption).
-- **XZ / 7-Zip**: ❌ **FAILED** (Data loss, CRC mismatch).
-- **Lazarus**: ✅ **SUCCESS** (Detected damage via DNA fingerprints and automatically self-healed using the Phoenix Shield).
+- **Gzip / Zip**: FAILED **FAILED** (Data loss, stream corruption).
+- **XZ / 7-Zip**: FAILED **FAILED** (Data loss, CRC mismatch).
+- **Lazarus**: SUCCESS **SUCCESS** (Detected damage via DNA fingerprints and automatically self-healed using the Phoenix Shield).
 
 ## Comparison vs Standard Tools
 
@@ -65,10 +65,10 @@ In a direct "Chaos Injection" test comparing Lazarus v0.1.1 vs industry standard
 ### Rigor Test (Compression & Integrity)
 | File Type | Original | Lazarus | 7-Zip | Gzip | Healing (Chaos) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **CSV Data** | 50 MB | 18 MB | 17 MB | 20 MB | **✅ Healed** |
-| **XML Config**| 50 MB | 14 MB | 13 MB | 17 MB | **✅ Healed** |
-| **Mixed Payload**| 50 MB | 48 MB | 46 MB | 48 MB | **✅ Healed** |
-| **Server Logs** | 100 MB | 8.0 MB| 7.6 MB| 9.9 MB| **✅ Healed** |
+| **CSV Data** | 50 MB | 18 MB | 17 MB | 20 MB | **SUCCESS Healed** |
+| **XML Config**| 50 MB | 14 MB | 13 MB | 17 MB | **SUCCESS Healed** |
+| **Mixed Payload**| 50 MB | 48 MB | 46 MB | 48 MB | **SUCCESS Healed** |
+| **Server Logs** | 100 MB | 8.0 MB| 7.6 MB| 9.9 MB| **SUCCESS Healed** |
 | **Folder (Tiny)**| 1.5 MB | 1.6 KB| 1.0 KB| 2.2 KB| *Skipped (Too Small)* |
 
 *\*Note: Healing is automatically disabled for archives < 2KB to prevent excessive metadata overhead.*
@@ -106,3 +106,5 @@ lazarus decompress <file.lzr>
 
 ## License
 [MIT License](LICENSE) - Copyright (c) 2026 Azzar Budiyanto
+## Documentation
+Comprehensive technical documentation, including roadmaps and performance analysis, can be found in the [docs/](docs/) directory.
