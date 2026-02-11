@@ -1,114 +1,98 @@
-# Lazarus: High-Density DNA Compression
+# Lazarus: High-Density DNA Compression Engine
 
-Lazarus is a high-density compression engine designed for extreme storage optimization, self-healing data reconstruction, and built-in confidentiality. It combines deep entropy reduction with block-level integrity fingerprints, redundant header backups, ChaCha20-Poly1305 encryption, and adaptive Fountain Code parity to ensure that your data remains 100% reliable and private, even in the face of bit rot or unauthorized access.
+Lazarus is a specialized compression engine written in Rust, engineered for long-term data preservation and secure archival. It integrates deep entropy reduction (LZMA) with block-level integrity fingerprints (CRC-32), cryptographic confidentiality (ChaCha20-Poly1305), and mathematical self-healing (Wirehair Fountain Codes).
 
-## Table of Contents
+The primary objective of Lazarus is to ensure that archived data remains retrievable and private even when stored on unstable media or subjected to partial bit-rot and physical corruption.
 
-- [Why Lazarus?](#why-lazarus)
-- [The Core Philosophy](#the-core-philosophy)
-- [Self-Healing: The Phoenix Protocol](#self-healing-the-phoenix-protocol)
-- [Comparison vs Standard Tools](#comparison-vs-standard-tools)
-- [Performance Benchmarks](#performance-benchmarks)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Technical Architecture](#technical-architecture)
-- [License](#license)
+## Technical Architecture
 
-## Why "Lazarus"?
+Lazarus utilizes a multi-layered approach to data protection:
 
-The name **Lazarus** is inspired by the concept of miraculous restoration. In our engine, data is "stripped down" to its absolute minimum. However, because we preserve the **"DNA"** (CRC-32 fingerprints), a **"Brain Backup"** (Redundant Headers), and a **"Phoenix Shield"** (Adaptive Parity), the original data can be "resurrected" from a corrupted state with bit-for-bit perfection.
-
-## The Core Philosophy
-
-1.  **Adaptive Chunking**: Automatically scales block sizes (4KB to 1MB) based on input file size to balance metadata overhead and reconstruction granularity.
-2.  **DNA Fingerprinting**: Every block is fingerprinted with CRC-32 before and after compression. These serve as the ground truth for reconstruction.
-3.  **Ultra-Deep Entropy Reduction**: Utilizing LZMA (Level 9 Extreme) to achieve maximum density.
-4.  **Self-Healing (Phoenix Protocol)**: Utilizes Wirehair Fountain Codes to mathematically repair corrupted segments of the archive.
-5.  **Brain Redundancy**: Dual-header strategy (Primary + Backup) ensures structural metadata survives even if the start of the archive is physically damaged.
-
-## Self-Healing: The Phoenix Protocol
-
-Unlike standard `.zip` or `.7z` files, Lazarus is designed for "Cold Storage" where hardware failure is a risk. 
-
-- **The Shield**: Every archive includes an **Adaptive Parity** overhead (3% to 10%) optimized for the file size.
-- **The Repair**: If Lazarus detects a CRC mismatch, it uses Fountain Code parity symbols to mathematically reconstruct the missing or corrupted data blocks.
-- **The Resurrection**: If the archive header is damaged, the system automatically detects the corruption via DNA mismatch and restores the structural "brain" from the redundant backup copy.
-
-### Chaos Resilience Summary
-In a direct "Chaos Injection" test comparing Lazarus vs industry standards (corrupting 1KB of data in each archive):
-- **Gzip / Zip**: FAILED (Data loss, stream corruption).
-- **XZ / 7-Zip**: FAILED (Data loss, CRC mismatch).
-- **Lazarus**: SUCCESS (Detected damage via DNA fingerprints and automatically self-healed using the Phoenix Shield).
+1.  **Adaptive Block Chunking**: Input data is partitioned into dynamic blocks (ranging from 4KB to 1MB) based on total file size. This strategy balances metadata overhead against the granularity of potential data recovery.
+2.  **DNA Fingerprinting**: Every block undergoes CRC-32 verification before and after the compression/encryption stages. These fingerprints serve as the authoritative ground truth during the reconstruction process.
+3.  **Entropy Reduction**: Data is compressed using LZMA (Level 9) to achieve maximum theoretical density.
+4.  **Secret Shield (Confidentiality)**: When enabled, compressed blocks are encrypted using the ChaCha20-Poly1305 AEAD algorithm. Encryption keys are derived from user passwords using the Argon2id key derivation function (KDF).
+5.  **Phoenix Protocol (Self-Healing)**: Lazarus applies Wirehair Fountain Codes to generate an adaptive parity shield (3% to 10% overhead). This allows for bit-perfect reconstruction of corrupted blocks without requiring original source data.
+6.  **Structural Redundancy**: The archive utilizes a dual-header "Brain Backup" strategy. If the primary header fails integrity checks, the system automatically resurrects the archive structure from a redundant metadata block.
 
 ## Comparison vs Standard Tools
 
+The following table summarizes the capabilities of Lazarus v0.1.7 compared to industry-standard archival tools.
+
 | Feature | Lazarus | XZ / 7-Zip | Gzip / Zip |
 | :--- | :--- | :--- | :--- |
-| **Compression Ratio** | Ultra High (LZMA L9) | Ultra High | Moderate |
-| **Self-Healing** | **Yes (Phoenix Protocol)** | No | No |
-| **Integrity Check** | Block-Level (Adaptive) | Stream-Level | File-Level |
-| **Encryption** | **ChaCha20-Poly1305** | AES-256 | Mixed |
-| **Parallel Processing** | **Yes (via Rayon)** | Semi-Supported | Limited |
-| **Repair Capability** | Mathematical (Wirehair) | External Rev-files only | None |
-| **Speed** | Moderate (Parallel) | Slow (L9) | Very Fast |
-
-### Pros
-- **High Resilience**: Can survive partial file corruption (bit rot) and header damage that destroys standard archives.
-- **Data Privacy**: Built-in block-level encryption ensures confidentiality without sacrificing resilience.
-- **Parallel Architecture**: Leverages multi-core CPUs for both compression and decompression.
-- **Adaptive Precision**: Identifies granular data loss at the block level.
-- **Native Directory Support**: Bundles folders without requiring external `tar` wrapping.
-
-### Cons
-- **Metadata Overhead**: Small archives (<2KB) are inefficient due to redundant header and parity requirements.
-- **Context Loss**: Parallel chunking slightly reduces compression ratio vs monolithic streams.
-- **Complexity**: Self-healing adds significant computational weight to the decoding process.
+| **Primary Algorithm** | LZMA (L9) | LZMA2 | DEFLATE |
+| **Integrity Check** | Block-Level (DNA) | Stream-Level | File-Level |
+| **Confidentiality** | ChaCha20-Poly1305 | AES-256 | Mixed |
+| **Self-Healing** | Built-in (Phoenix) | None | None |
+| **Parallelism** | Rayon (Multithreaded) | Semi-Supported | Limited |
+| **Data Resurrection** | Mathematical | External Parity Only | None |
+| **Architecture** | x86_64 / ARM64 | Universal | Universal |
 
 ## Performance Benchmarks
 
-*Recent tests conducted on x86_64 comparing Lazarus v0.1.6 vs Industry Standards.*
+Recent testing conducted on an x86_64 environment using Lazarus v0.1.7.
 
-### Rigor Test (Compression & Integrity)
-| File Type | Original | Lazarus | 7-Zip | Gzip | Healing (Chaos) |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **CSV Data** | 50 MB | 18.2 MB | 17.5 MB | 20.1 MB | **SUCCESS (Healed)** |
-| **JSON Data**| 50 MB | 14.1 MB | 13.8 MB | 17.3 MB | **SUCCESS (Healed)** |
-| **Mixed Payload**| 50 MB | 48.5 MB | 46.2 MB | 48.1 MB | **SUCCESS (Healed)** |
-| **Server Logs** | 100 MB | 8.2 MB | 7.6 MB | 9.9 MB | **SUCCESS (Healed)** |
+### Compression Efficiency and Resilience
+Tests were conducted by injecting 1KB of random data (corruption) into the archive data stream.
 
-*\*Note: Healing is automatically disabled for archives < 2KB to prevent excessive metadata overhead.*
+| File Type | Original Size | Lazarus Size | Reduction | Chaos Resilience |
+| :--- | :--- | :--- | :--- | :--- |
+| **Server Logs** | 50 MB | 196 KB | 99.63% | **SUCCESS (Healed)** |
+| **JSON Data** | 50 MB | 2.2 MB | 95.48% | **SUCCESS (Healed)** |
+| **Binary Data**| 10 MB | 10.6 MB | -5.93% | **SUCCESS (Healed)** |
 
+*Note: Binary data archives include a higher adaptive parity overhead (10%) to ensure recovery for high-entropy payloads.*
 
 ## Installation
 
-### Debian/Ubuntu (.deb)
-Download from the [Releases](https://github.com/1999AZZAR/lazarus/releases) page:
-```bash
-sudo dpkg -i lazarus_0.1.6_amd64.deb
-```
-
 ### From Source
+Ensure the Rust toolchain is installed, then execute:
 ```bash
 cargo build --release
 sudo cp target/release/lazarus /usr/bin/
 ```
 
+### Debian/Ubuntu (.deb)
+Official packages are available on the GitHub Releases page:
+```bash
+sudo dpkg -i lazarus_0.1.7_amd64.deb
+```
+
 ## Usage
 
-Lazarus automatically detects whether you are providing a single file or an entire folder.
-
-### Compress
+### Compression
+To compress a file or an entire directory:
 ```bash
-lazarus compress <path> [--password <secret>]
+lazarus compress <path>
 ```
 
-### Decompress
+To enable encryption (Secret Shield):
 ```bash
-lazarus decompress <file.lzr> [--password <secret>]
+lazarus compress <path> --password "your-secure-phrase"
 ```
 
-## License
-[MIT License](LICENSE) - Copyright (c) 2026 Azzar Budiyanto
+### Decompression
+To decompress and verify an archive:
+```bash
+lazarus decompress <file.lzr>
+```
+
+For encrypted archives:
+```bash
+lazarus decompress <file.lzr> --password "your-secure-phrase"
+```
+
+## Implementation Details
+
+- **Concurrency**: Lazarus leverages the `rayon` library for parallel processing of compression and encryption blocks, significantly reducing wall-clock time on multi-core systems.
+- **Key Derivation**: Argon2id is utilized for password-to-key conversion, providing high resistance against GPU-based brute-force attacks.
+- **Error Correction**: The `wirehair-wrapper` crate provides the underlying fountain code logic for data resurrection.
 
 ## Documentation
-Comprehensive technical documentation, including roadmaps and performance analysis, can be found in the [docs/](docs/) directory.
+
+Comprehensive technical documentation, implementation reports, and detailed performance analysis can be found in the [docs/](docs/) directory.
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details. Copyright (c) 2026 Azzar Budiyanto.
