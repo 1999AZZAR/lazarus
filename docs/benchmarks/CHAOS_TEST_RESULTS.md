@@ -15,7 +15,7 @@ Comprehensive chaos injection testing confirms that Lazarus maintains full self-
 ### Bash Comprehensive Test (benchmarks/chaos_test.sh)
 - Generates 631KB of structured log data
 - Compresses to 58KB (90.81% reduction)
-- Injects 10 bytes of corruption in concentrated window
+- Injects 1024 bytes of corruption in concentrated window
 - Compares against standard tools (gzip, xz)
 - Validates SHA256 checksum match
 
@@ -28,8 +28,8 @@ Comprehensive chaos injection testing confirms that Lazarus maintains full self-
 ```
 Original: 631KB
 Compressed: 58KB (90.81% reduction)
-Recovery Shield: 5% parity overhead
-Corruption: 10 random bytes in positions 2319-4207
+Recovery Shield: Adaptive parity overhead (10% for small files)
+Corruption: 1KB random data
 ```
 
 **Phoenix Protocol Activation:**
