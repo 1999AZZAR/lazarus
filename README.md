@@ -68,7 +68,7 @@ In a direct "Chaos Injection" test comparing Lazarus vs industry standards (corr
 
 ### Rigor Test (Compression & Integrity)
 | File Type | Original | Lazarus | 7-Zip | Gzip | Healing (Chaos) |
-| :--- | :--- | :--- | : :--- | :--- | :--- |
+| :--- | :--- | :--- | :--- | :--- | :--- |
 | **CSV Data** | 50 MB | 18.2 MB | 17.5 MB | 20.1 MB | **SUCCESS (Healed)** |
 | **JSON Data**| 50 MB | 14.1 MB | 13.8 MB | 17.3 MB | **SUCCESS (Healed)** |
 | **Mixed Payload**| 50 MB | 48.5 MB | 46.2 MB | 48.1 MB | **SUCCESS (Healed)** |
