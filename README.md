@@ -42,21 +42,23 @@ In a direct "Chaos Injection" test comparing Lazarus v0.1.1 vs industry standard
 
 | Feature | Lazarus | XZ / 7-Zip | Gzip / Zip |
 | :--- | :--- | :--- | :--- |
-| **Compression Ratio** | Ultra High | Ultra High | Moderate |
-| **Self-Healing** | **Yes (Built-in)** | No | No |
-| **Integrity Check** | Block-Level (1MB) | Stream-Level | File-Level |
-| **Repair Capability** | Mathematical Recovery | External Rev-files only | None |
-| **Speed** | Slow (Heavy) | Slow | Very Fast |
+| **Compression Ratio** | Ultra High (LZMA L9) | Ultra High | Moderate |
+| **Self-Healing** | **Yes (Phoenix Protocol)** | No | No |
+| **Integrity Check** | Block-Level (Adaptive) | Stream-Level | File-Level |
+| **Parallel Processing** | **Yes (via Rayon)** | Semi-Supported | Limited |
+| **Repair Capability** | Mathematical (Wirehair) | External Rev-files only | None |
+| **Speed** | Moderate (Parallel) | Slow (L9) | Very Fast |
 
 ### Pros
-- **Invincibility**: Can survive partial file corruption that would destroy other archives.
-- **Precision**: Identifies exactly which part of a file is damaged.
-- **Adaptive**: Optimizes itself for the data size automatically.
-- **Native Folder Support**: Handles entire directories seamlessly without external tools.
+- **High Resilience**: Can survive partial file corruption (bit rot) that destroys standard archives.
+- **Parallel Architecture**: Leverages multi-core CPUs for both compression and decompression.
+- **Adaptive Precision**: Identifies granular data loss at the block level.
+- **Native Directory Support**: Bundles folders without requiring external `tar` wrapping.
 
 ### Cons
-- **CPU Intensive**: High-level compression takes time and power.
-- **Binary Size**: Slightly larger overhead due to the embedded recovery shield.
+- **Metadata Overhead**: Small archives (<2KB) are inefficient due to header and parity requirements.
+- **Context Loss**: Parallel chunking slightly reduces compression ratio vs monolithic streams.
+- **Complexity**: Self-healing adds significant computational weight to the decoding process.
 
 ## Performance Benchmarks
 
