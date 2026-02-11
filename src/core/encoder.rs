@@ -101,7 +101,13 @@ impl Encoder {
             compressed_fingerprints,
             is_folder,
             compressed_chunk_sizes,
+            header_checksum: 0,
         };
+
+        // 4. Final Header DNA (Structural Integrity)
+        let mut header_bytes = bincode::serialize(&header)?;
+        let header_checksum = calculate_checksum(&header_bytes);
+        header.header_checksum = header_checksum;
 
         Ok((compressed_data, recovery_data, header))
     }

@@ -5,7 +5,7 @@ mod metadata;
 use clap::{Parser, Subcommand};
 use anyhow::{Result, Context};
 use std::fs::{self, File};
-use std::io::{Write, Read, Cursor};
+use std::io::{Write, Read, Cursor, Seek};
 use std::path::Path;
 use crate::core::encoder::Encoder;
 use crate::core::decoder::Decoder;
@@ -86,13 +86,16 @@ fn main() -> Result<()> {
             let encoder = Encoder::new(density, block_size); 
             let (compressed_data, recovery_data, header) = encoder.compress(&data, is_folder)?;
 
-            // Serialize Header
+            // Serialize Header with calculated DNA
             let header_bytes = bincode::serialize(&header)?;
             let header_len = header_bytes.len() as u32;
 
             let mut out_file = File::create(&output_path)?;
+            
+            // Layout: [Len:4][Header:N][HeaderCopy:N][Compressed:M][Recovery:K]
             out_file.write_all(&header_len.to_le_bytes())?;
             out_file.write_all(&header_bytes)?;
+            out_file.write_all(&header_bytes)?; // Brain Redundancy (Backup copy of the header)
             out_file.write_all(&compressed_data)?;
             out_file.write_all(&recovery_data)?;
 
@@ -101,7 +104,7 @@ fn main() -> Result<()> {
 
             println!("Success! Saved to {}", output_path);
             println!("Original: {} bytes", original_size);
-            println!("Lazarus:  {} bytes (Inc. Recovery Shield)", final_size);
+            println!("Lazarus:  {} bytes (Inc. Brain Redundancy & Recovery Shield)", final_size);
             println!("Reduction: {:.2}%", ratio * 100.0);
         },
         Commands::Decompress { input, output } => {
@@ -113,11 +116,50 @@ fn main() -> Result<()> {
             file.read_exact(&mut len_buf).context("Failed to read header length")?;
             let header_len = u32::from_le_bytes(len_buf) as usize;
 
+            // Attempt to load Primary Brain
             let mut header_buf = vec![0u8; header_len];
-            file.read_exact(&mut header_buf).context("Failed to read header")?;
-            let header: LazarusHeader = bincode::deserialize(&header_buf)?;
+            file.read_exact(&mut header_buf).context("Failed to read primary header")?;
+            
+            let header: Result<LazarusHeader> = (|| {
+                let h: LazarusHeader = bincode::deserialize(&header_buf)?;
+                // Verify DNA of Primary Brain
+                let mut check_h = h.clone();
+                check_h.header_checksum = 0;
+                let actual_sum = crate::core::calculate_checksum(&bincode::serialize(&check_h)?);
+                if actual_sum != h.header_checksum {
+                    anyhow::bail!("Primary header DNA mismatch");
+                }
+                Ok(h)
+            })();
 
-            let compressed_len = total_len - 4 - header_len as u64 - header.recovery_len;
+            let header = match header {
+                Ok(h) => h,
+                Err(e) => {
+                    println!("  Warning: Primary Brain corrupted ({}). Attempting Resurrection from Backup...", e);
+                    let mut backup_buf = vec![0u8; header_len];
+                    file.read_exact(&mut backup_buf).context("Failed to read backup header")?;
+                    let h: LazarusHeader = bincode::deserialize(&backup_buf)
+                        .context("Backup header also corrupted. Data loss is irreversible.")?;
+                    
+                    // Verify DNA of Backup Brain
+                    let mut check_h = h.clone();
+                    check_h.header_checksum = 0;
+                    let actual_sum = crate::core::calculate_checksum(&bincode::serialize(&check_h)?);
+                    if actual_sum != h.header_checksum {
+                        anyhow::bail!("Backup header DNA mismatch. Archive is fundamentally broken.");
+                    }
+                    println!("  Success: Header resurrected from redundant backup.");
+                    h
+                }
+            };
+
+            // Calculate start of payload based on redundant header layout
+            let payload_start = 4 + (header_len as u64 * 2);
+            let compressed_len = total_len - payload_start - header.recovery_len;
+            
+            file.set_len(total_len)?; // Ensure seek is valid
+            file.seek(std::io::SeekFrom::Start(payload_start))?;
+
             let mut compressed_buf = vec![0u8; compressed_len as usize];
             file.read_exact(&mut compressed_buf).context("Failed to read compressed body")?;
             
