@@ -89,7 +89,7 @@ impl Encoder {
             println!("  Note: Input too small for recovery shield. Skipping.");
         }
 
-        let header = LazarusHeader {
+        let mut header = LazarusHeader {
             magic: *b"LZRS",
             original_size: input.len() as u64,
             block_size,
@@ -105,7 +105,7 @@ impl Encoder {
         };
 
         // 4. Final Header DNA (Structural Integrity)
-        let mut header_bytes = bincode::serialize(&header)?;
+        let header_bytes = bincode::serialize(&header)?;
         let header_checksum = calculate_checksum(&header_bytes);
         header.header_checksum = header_checksum;
 
