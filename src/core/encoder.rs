@@ -62,14 +62,22 @@ impl Encoder {
         let mut recovery_data = Vec::new();
 
         if compressed_data.len() >= wh_block_size as usize * 2 {
-            println!("  Generating Recovery Shield (5% Parity)...");
+            // Adaptive Parity: 3% to 10% based on input size
+            let recovery_overhead = if input.len() < 1024 * 1024 {
+                0.10 // 10% for small files (<1MB)
+            } else if input.len() < 100 * 1024 * 1024 {
+                0.05 // 5% for medium files (<100MB)
+            } else {
+                0.03 // 3% for large files (>=100MB)
+            };
+
+            println!("  Generating Recovery Shield ({:.0}% Adaptive Parity)...", recovery_overhead * 100.0);
             
             // Calculate CRCs for compressed blocks - Parallel
             compressed_fingerprints = compressed_data.par_chunks(wh_block_size as usize)
                 .map(|chunk| calculate_checksum(chunk))
                 .collect();
 
-            let recovery_overhead = 0.05;
             let recovery_len = (compressed_data.len() as f32 * recovery_overhead).ceil() as usize;
             let wh_encoder = WirehairEncoder::new(&compressed_data, compressed_data.len() as u64, wh_block_size);
             

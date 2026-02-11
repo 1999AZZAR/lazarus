@@ -18,6 +18,7 @@
 - [x] **Chaos Lab**: Built a comprehensive stress-testing suite (`chaos_test.sh` and `chaos_test.rs`).
 - [x] **Performance Tracking**: Documented impact analysis and benchmarking results.
 - [x] **Header Redundancy**: Implemented "Brain Backup" (Redundant Headers) and DNA verification to prevent segfaults during corruption.
+- [x] **Adaptive Parity**: Implemented dynamic recovery overhead (3% - 10%) optimized for varying file sizes.
 
 ## 3. Active Technical Debt
 
@@ -35,7 +36,6 @@
 - [ ] **WASM Porting**: Compile core engine for browser-side data resurrection.
 
 ### Phase 2: Intelligence & Optimization
-- [ ] **Adaptive Parity**: Dynamic adjustment of recovery overhead (5% to 25%).
 - [ ] **Deduplication**: Block-level deduplication for redundant data archiving.
 - [ ] **CPU Tuning**: Auto-detect core count for optimal chunk size allocation.
 
