@@ -20,7 +20,11 @@
 
 ## 3. Active Technical Debt
 
-### Problem: Security Vulnerability (Cleartext Data)
+### Problem: Header Vulnerability to Corruption
+- **Issue**: Intense chaos testing revealed that random corruption (1KB) on larger archives (50MB) can lead to segmentation faults or total decompression failure if it hits the archive header or block metadata. Currently, the Phoenix Shield only protects the data payload, leaving the structural "brain" of the archive vulnerable.
+- **Solution**: Implement "Header Parity" or a redundant metadata strategy. Key structural information (chunk sizes, fingerprints, and Wirehair parameters) should be stored with its own error-correction overhead or mirrored at the end of the archive.
+
+### Problem: Resource Usage on Heavy Datasets
 - **Solution**: Integrate a "Secret Shield" using ChaCha20-Poly1305 encryption. Encrypt blocks before applying Fountain Code parity.
 
 ### Problem: Missing System Metadata
@@ -28,9 +32,10 @@
 
 ## 4. Future Roadmap
 
-### Phase 1: Security & Portability
+### Phase 1: Security, Portability & Robustness
 - [ ] Implement ChaCha20-Poly1305 encryption layer.
 - [ ] Add Unix metadata persistence (permissions, timestamps).
+- [ ] **Header Redundancy**: Implement parity-protected headers or redundant metadata blocks to prevent "single point of failure" corruption.
 - [ ] **WASM Porting**: Compile core engine for browser-side data resurrection.
 
 ### Phase 2: Intelligence & Optimization
