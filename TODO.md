@@ -3,46 +3,44 @@
 ## 1. Project Analysis Summary
 
 ### Pros
-- **High Resilience**: Native self-healing via Fountain Codes (Wirehair) allows bit-perfect reconstruction from corrupted states.
-- **Precision Integrity**: Block-level CRC-32 fingerprints provide granular detection of where corruption occurred.
-- **Extreme Density**: Utilization of LZMA Level 9 achieves industry-leading compression ratios for cold storage.
-- **Adaptive Architecture**: Scales block sizes dynamically to balance metadata overhead.
+- **Extreme Resilience**: Native self-healing via Fountain Codes (Wirehair) with bit-perfect reconstruction.
+- **Parallel Performance**: Multi-threaded compression and decompression via `rayon` integration.
+- **Granular Integrity**: Block-level CRC-32 fingerprints for precise corruption detection.
+- **Adaptive Scaling**: Dynamic block sizing for balanced metadata overhead.
 
 ### Cons
-- **Performance Bottleneck**: Single-threaded LZMA Level 9 is computationally expensive and slow.
-- **Static Overhead**: Fixed 5% parity might be excessive for small files or insufficient for highly unstable storage media.
-- **Resource Heavy**: High memory and CPU usage during the compression/decompression phase.
+- **Context Loss**: Independent chunk compression slightly reduces the overall compression ratio compared to monolithic streams.
+- **Static Parity**: Fixed 5% overhead may not fit all storage scenarios (too high for reliable media, too low for failing hardware).
+- **Security Gap**: Data is stored in cleartext (after compression), making it vulnerable to unauthorized access.
 
-## 2. Immediate Technical Debt & Fixes
+## 2. Completed Milestones
+- [x] **Parallel Processing**: Successfully implemented `rayon` for concurrent chunk handling.
+- [x] **Chaos Lab**: Built a comprehensive stress-testing suite (`chaos_test.sh` and `chaos_test.rs`).
+- [x] **Performance Tracking**: Documented impact analysis and benchmarking results.
 
-### Problem: Performance Bottleneck in Compression
-- **Issue**: Current implementation processes blocks sequentially, wasting multi-core CPU potential.
-- **Solution**: Implement `rayon` for parallel block processing. Each chunk can be compressed independently, significantly reducing total wall-clock time.
+## 3. Active Technical Debt
 
 ### Problem: Security Vulnerability (Cleartext Data)
-- **Issue**: While the data is resilient to corruption, it is not protected from unauthorized access.
-- **Solution**: Integrate a "Secret Shield" using ChaCha20-Poly1305 encryption. Encrypt blocks before applying Fountain Code parity to ensure both privacy and resilience.
+- **Solution**: Integrate a "Secret Shield" using ChaCha20-Poly1305 encryption. Encrypt blocks before applying Fountain Code parity.
 
-### Problem: Missing Unix Metadata
-- **Issue**: File permissions and original timestamps are lost during the archive process.
-- **Solution**: Expand the `.lzr` header structure to store and restore Unix file permissions (mode) and system timestamps (mtime).
+### Problem: Missing System Metadata
+- **Solution**: Expand the `.lzr` header to store and restore Unix file permissions (mode) and system timestamps (mtime).
 
-## 3. Development Roadmap
+## 4. Future Roadmap
 
-### Phase 1: Performance & Security
-- [x] Implement parallel processing via `rayon`.
-- [ ] Add AES-256-GCM or ChaCha20-Poly1305 encryption layer.
-- [ ] Standardize header format for Unix metadata persistence.
+### Phase 1: Security & Portability
+- [ ] Implement ChaCha20-Poly1305 encryption layer.
+- [ ] Add Unix metadata persistence (permissions, timestamps).
+- [ ] **WASM Porting**: Compile core engine for browser-side data resurrection.
 
-### Phase 2: Experimental & Research
-- [ ] **WASM Porting**: Compile core engine to WebAssembly for browser-side data resurrection.
-- [ ] **Adaptive Parity**: Implement logic to dynamically adjust recovery overhead (5% to 25%) based on data importance or user input.
-- [ ] **Deduplication**: Add block-level deduplication to optimize archives containing redundant data structures.
+### Phase 2: Intelligence & Optimization
+- [ ] **Adaptive Parity**: Dynamic adjustment of recovery overhead (5% to 25%).
+- [ ] **Deduplication**: Block-level deduplication for redundant data archiving.
+- [ ] **CPU Tuning**: Auto-detect core count for optimal chunk size allocation.
 
-### Phase 3: Infrastructure & Tooling
-- [ ] **Chaos Lab**: Develop a dedicated stress-testing suite to automate random corruption injection and verification.
-- [ ] **CLI Polish**: Integrate `indicatif` for real-time progress bars and throughput metrics.
-- [ ] **CI Pipeline**: Automate multi-platform builds (.deb, .rpm, binary) using GitHub Actions.
+### Phase 3: UX & Infrastructure
+- [ ] **CLI Polish**: Add real-time progress bars using `indicatif`.
+- [ ] **CI/CD Pipeline**: Automate multi-platform binary and package builds.
 
 ---
-*Roadmap drafted by Mema*
+*Updated by Mema after Rayon & Chaos Lab implementation*
