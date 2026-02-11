@@ -1,6 +1,6 @@
 use crate::metadata::LazarusHeader;
 use crate::core::calculate_checksum;
-use anyhow::{Result, bail};
+use anyhow::{Result, bail, Context};
 use std::io::Read;
 use xz2::read::XzDecoder;
 use wirehair_wrapper::wirehair::{WirehairDecoder, WirehairResult};
