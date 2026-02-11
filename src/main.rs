@@ -120,7 +120,7 @@ fn main() -> Result<()> {
             let mut header_buf = vec![0u8; header_len];
             file.read_exact(&mut header_buf).context("Failed to read primary header")?;
             
-            let header: Result<LazarusHeader> = (|| {
+            let header_result: Result<LazarusHeader> = (|| {
                 let h: LazarusHeader = bincode::deserialize(&header_buf)?;
                 // Verify DNA of Primary Brain
                 let mut check_h = h.clone();
@@ -132,18 +132,18 @@ fn main() -> Result<()> {
                 Ok(h)
             })();
 
-            let header = match header {
+            let header = match header_result {
                 Ok(h) => {
-                    // Correct: If primary is fine, we MUST seek past the backup copy
+                    // Correct: If primary is fine, we MUST skip the backup copy.
                     // The file cursor is currently at the end of Primary Header.
-                    // We need to move it forward by another header_len.
                     file.seek(std::io::SeekFrom::Current(header_len as i64))?;
                     h
                 },
                 Err(e) => {
                     println!("  Warning: Primary Brain corrupted ({}). Attempting Resurrection from Backup...", e);
-                    // The file cursor is currently at the end of Primary Header.
-                    // The Backup Header starts exactly where we are.
+                    // Reset to the position where backup starts (immediately after primary length field + primary header)
+                    file.seek(std::io::SeekFrom::Start(4 + header_len as u64))?;
+                    
                     let mut backup_buf = vec![0u8; header_len];
                     file.read_exact(&mut backup_buf).context("Failed to read backup header")?;
                     let h: LazarusHeader = bincode::deserialize(&backup_buf)
@@ -165,7 +165,6 @@ fn main() -> Result<()> {
             let payload_start = 4 + (header_len as u64 * 2);
             let compressed_len = total_len - payload_start - header.recovery_len;
             
-            file.set_len(total_len)?; // Ensure seek is valid
             file.seek(std::io::SeekFrom::Start(payload_start))?;
 
             let mut compressed_buf = vec![0u8; compressed_len as usize];
