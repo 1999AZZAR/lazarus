@@ -3,7 +3,7 @@ mod io;
 mod metadata;
 
 use clap::{Parser, Subcommand};
-use anyhow::{Result, Context, bail};
+use anyhow::{Result, Context};
 use std::fs::{self, File};
 use std::io::{Write, Read, Cursor};
 use std::path::Path;

@@ -30,7 +30,7 @@
 ## 3. Development Roadmap
 
 ### Phase 1: Performance & Security
-- [ ] Implement parallel processing via `rayon`.
+- [x] Implement parallel processing via `rayon`.
 - [ ] Add AES-256-GCM or ChaCha20-Poly1305 encryption layer.
 - [ ] Standardize header format for Unix metadata persistence.
 

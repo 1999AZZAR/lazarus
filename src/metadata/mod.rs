@@ -12,4 +12,5 @@ pub struct LazarusHeader {
     pub recovery_len: u64,
     pub compressed_fingerprints: Vec<u32>, // DNA of Compressed Data (for Repair)
     pub is_folder: bool,               // New field for folder support
+    pub compressed_chunk_sizes: Vec<usize>, // Sizes of each compressed chunk for parallel decompression
 }

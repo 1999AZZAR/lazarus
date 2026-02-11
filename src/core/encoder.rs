@@ -4,6 +4,7 @@ use anyhow::{Result, Context};
 use std::io::Read;
 use xz2::read::XzEncoder;
 use wirehair_wrapper::wirehair::WirehairEncoder;
+use rayon::prelude::*;
 
 pub struct Encoder {
     density: f32,
@@ -34,18 +35,26 @@ impl Encoder {
             optimal
         });
 
-        // 1. DNA Fingerprinting (Original Data)
-        let mut fingerprints = Vec::new();
-        for chunk in input.chunks(block_size as usize) {
-            fingerprints.push(calculate_checksum(chunk));
-        }
+        // 1. DNA Fingerprinting (Original Data) - Parallel
+        let fingerprints: Vec<u32> = input.par_chunks(block_size as usize)
+            .map(|chunk| calculate_checksum(chunk))
+            .collect();
 
-        // 2. Deep LZMA Compression
-        println!("  Applying Deep LZMA (Level 9)...");
-        let mut compressor = XzEncoder::new(input, 9);
-        let mut compressed_data = Vec::new();
-        compressor.read_to_end(&mut compressed_data)
-            .context("LZMA compression failed")?;
+        // 2. Deep LZMA Compression - Parallel per chunk
+        println!("  Applying Deep LZMA (Level 9) in parallel...");
+        let compressed_chunks: Result<Vec<Vec<u8>>> = input.par_chunks(block_size as usize)
+            .map(|chunk| {
+                let mut compressor = XzEncoder::new(chunk, 9);
+                let mut compressed_chunk = Vec::new();
+                compressor.read_to_end(&mut compressed_chunk)
+                    .context("LZMA compression failed")?;
+                Ok(compressed_chunk)
+            })
+            .collect();
+        
+        let compressed_chunks = compressed_chunks?;
+        let compressed_chunk_sizes: Vec<usize> = compressed_chunks.iter().map(|c| c.len()).collect();
+        let compressed_data: Vec<u8> = compressed_chunks.into_iter().flatten().collect();
 
         // 3. Generate Wirehair Recovery Symbols
         let wh_block_size = 1024;
@@ -55,10 +64,10 @@ impl Encoder {
         if compressed_data.len() >= wh_block_size as usize * 2 {
             println!("  Generating Recovery Shield (5% Parity)...");
             
-            // Calculate CRCs for compressed blocks
-            for chunk in compressed_data.chunks(wh_block_size as usize) {
-                compressed_fingerprints.push(calculate_checksum(chunk));
-            }
+            // Calculate CRCs for compressed blocks - Parallel
+            compressed_fingerprints = compressed_data.par_chunks(wh_block_size as usize)
+                .map(|chunk| calculate_checksum(chunk))
+                .collect();
 
             let recovery_overhead = 0.05;
             let recovery_len = (compressed_data.len() as f32 * recovery_overhead).ceil() as usize;
@@ -91,6 +100,7 @@ impl Encoder {
             recovery_len: recovery_data.len() as u64,
             compressed_fingerprints,
             is_folder,
+            compressed_chunk_sizes,
         };
 
         Ok((compressed_data, recovery_data, header))

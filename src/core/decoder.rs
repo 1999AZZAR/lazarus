@@ -4,6 +4,7 @@ use anyhow::{Result, bail};
 use std::io::Read;
 use xz2::read::XzDecoder;
 use wirehair_wrapper::wirehair::{WirehairDecoder, WirehairResult};
+use rayon::prelude::*;
 
 pub struct Decoder;
 
@@ -20,7 +21,15 @@ impl Decoder {
         let is_healthy = self.check_compressed_integrity(compressed_data, header);
         
         let body_to_decompress = if is_healthy {
-            match self.lzma_decompress(compressed_data, header.original_size) {
+            // Use parallel decompression if chunk sizes are available
+            let decompress_result = if !header.compressed_chunk_sizes.is_empty() {
+                self.lzma_decompress_parallel(compressed_data, &header.compressed_chunk_sizes, header.original_size)
+            } else {
+                // Fallback to single-stream decompression for backward compatibility
+                self.lzma_decompress(compressed_data, header.original_size)
+            };
+            
+            match decompress_result {
                 Ok(data) => data,
                 Err(_) => {
                     println!("  ⚠️ LZMA stream error despite healthy CRCs. Attempting Phoenix Repair...");
@@ -66,6 +75,39 @@ impl Decoder {
         let mut buffer = Vec::with_capacity(original_size as usize);
         decompressor.read_to_end(&mut buffer).map_err(|e| anyhow::anyhow!("{}", e))?;
         Ok(buffer)
+    }
+
+    fn lzma_decompress_parallel(&self, data: &[u8], chunk_sizes: &[usize], original_size: u64) -> Result<Vec<u8>> {
+        // Split compressed data into chunks based on stored sizes
+        let mut chunks = Vec::new();
+        let mut offset = 0;
+        for &size in chunk_sizes {
+            if offset + size > data.len() {
+                bail!("Invalid chunk size: exceeds data length");
+            }
+            chunks.push(&data[offset..offset + size]);
+            offset += size;
+        }
+
+        // Decompress each chunk in parallel
+        let decompressed_chunks: Result<Vec<Vec<u8>>> = chunks.par_iter()
+            .map(|chunk| {
+                let mut decompressor = XzDecoder::new(*chunk);
+                let mut buffer = Vec::new();
+                decompressor.read_to_end(&mut buffer)
+                    .map_err(|e| anyhow::anyhow!("LZMA decompression failed: {}", e))?;
+                Ok(buffer)
+            })
+            .collect();
+
+        let decompressed_chunks = decompressed_chunks?;
+        let result: Vec<u8> = decompressed_chunks.into_iter().flatten().collect();
+        
+        if result.len() != original_size as usize {
+            bail!("Decompressed size mismatch: expected {}, got {}", original_size, result.len());
+        }
+        
+        Ok(result)
     }
 
     fn repair_body(&self, corrupted_body: &[u8], recovery_shield: &[u8], header: &LazarusHeader) -> Result<Vec<u8>> {
@@ -120,6 +162,12 @@ impl Decoder {
              .map_err(|e| anyhow::anyhow!("Phoenix Failed: {:?}", e))?;
         
         println!("  ✅ Body repaired.");
-        self.lzma_decompress(&repaired_body, header.original_size)
+        
+        // Use parallel decompression if chunk sizes are available
+        if !header.compressed_chunk_sizes.is_empty() {
+            self.lzma_decompress_parallel(&repaired_body, &header.compressed_chunk_sizes, header.original_size)
+        } else {
+            self.lzma_decompress(&repaired_body, header.original_size)
+        }
     }
 }
