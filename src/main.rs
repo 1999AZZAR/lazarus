@@ -133,7 +133,11 @@ fn main() -> Result<()> {
             })();
 
             let header = match header {
-                Ok(h) => h,
+                Ok(h) => {
+                    // Skip the backup copy since primary is fine
+                    file.seek(std::io::SeekFrom::Current(header_len as i64))?;
+                    h
+                },
                 Err(e) => {
                     println!("  Warning: Primary Brain corrupted ({}). Attempting Resurrection from Backup...", e);
                     let mut backup_buf = vec![0u8; header_len];
